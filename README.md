@@ -1,6 +1,6 @@
-# 🐝 SocialBee — Social Media Manager
+# ⚡ SocialSilico — Social Media Manager
 
-A full-stack social media manager that lets you post to **Twitter/X, Facebook, Instagram, and LinkedIn** with a single click. Secure OAuth sign-in — we never see your passwords.
+A full-stack social media automation and management platform that lets you publish and schedule content to **Twitter/X, Facebook, Instagram, and LinkedIn** with a single click. Powered by secure OAuth 2.0 authentication — zero password storage.
 
 ---
 
@@ -8,20 +8,22 @@ A full-stack social media manager that lets you post to **Twitter/X, Facebook, I
 
 ### Prerequisites
 - **Node.js** 18+
-- **MongoDB** (local or Atlas)
-- API keys for the social platforms you want to use
+- **MongoDB** (Atlas or local)
+- API keys for social networks you want to connect
 
 ### 1. Start the Backend
 ```bash
-cd socialbee/server
+cd server
 cp .env.example .env
-# Fill in your API keys in .env
+# Configure your MongoDB URI & API keys in .env
+npm install
 npm run dev
 ```
 
 ### 2. Start the Frontend
 ```bash
-cd socialbee/client
+cd client
+npm install
 npm run dev
 ```
 
@@ -29,38 +31,44 @@ Open **http://localhost:5173** in your browser.
 
 ---
 
-## 🔑 API Keys Setup
+## 🎨 Brand Identity
 
-You need developer accounts on the platforms you want to support.
+- **Name**: SocialSilico
+- **Primary Palette**: Indigo (`#4F46E5`), Violet (`#7C3AED`), Purple (`#9333EA`)
+- **Typography**: Montserrat (Headings / Wordmark), Inter (UI & Body)
+
+---
+
+## 🔑 API Keys Setup
 
 ### Google OAuth (Sign in with Google)
 1. Go to [Google Cloud Console](https://console.cloud.google.com)
-2. Create OAuth 2.0 credentials
-3. Add callback URL: `http://localhost:5000/api/auth/google/callback`
+2. Create OAuth 2.0 Web credentials
+3. Authorized Redirect URI: `http://localhost:5000/api/auth/google/callback`
 4. Copy `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` to `.env`
 
 ### GitHub OAuth (Sign in with GitHub)
 1. Go to [GitHub Developer Settings](https://github.com/settings/developers)
 2. Create an OAuth App
-3. Callback URL: `http://localhost:5000/api/auth/github/callback`
-4. Copy to `.env`
+3. Authorization Callback URL: `http://localhost:5000/api/auth/github/callback`
+4. Copy `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` to `.env`
 
 ### Twitter / X (Sign in + Posting)
 1. Go to [developer.twitter.com](https://developer.twitter.com)
-2. Create an app with **OAuth 1.0a** (for sign-in) + **OAuth 2.0 User Context** (for tweeting)
+2. Configure App with **OAuth 2.0 User Context** (Read & Write permissions)
 3. Callback URL: `http://localhost:5000/api/auth/twitter/callback`
-4. Needs **Basic** tier for posting (free tier = read only)
+4. Copy `TWITTER_CLIENT_ID` and `TWITTER_CLIENT_SECRET` to `.env`
 
-### Facebook + Instagram (Sign in + Posting)
+### Facebook + Instagram (Sign in + Page/IG Posting)
 1. Go to [developers.facebook.com](https://developers.facebook.com)
-2. Create an app, add **Facebook Login** and **Instagram Graph API** products
-3. Callback URL: `http://localhost:5000/api/auth/facebook/callback`
-4. Instagram posting requires a **Business/Creator account** linked to a Facebook Page
+2. Create app, add **Facebook Login** product
+3. Valid OAuth Redirect URI: `http://localhost:5000/api/auth/facebook/callback`
+4. Copy `FACEBOOK_APP_ID` and `FACEBOOK_APP_SECRET` to `.env`
 
 ### LinkedIn (Posting)
 1. Go to [linkedin.com/developers](https://www.linkedin.com/developers)
-2. Create an app, request `w_member_social` permission
-3. Add callback URL
+2. Request `w_member_social` permission
+3. Add callback URL to `.env`
 
 ---
 
@@ -68,10 +76,10 @@ You need developer accounts on the platforms you want to support.
 
 After signing in for the first time, run:
 ```bash
-cd socialbee/server
+cd server
 npm run seed-admin
 ```
-This promotes the first user in the database to admin.
+This promotes the first registered user to **admin** with access to the Admin Panel.
 
 ---
 
@@ -79,30 +87,31 @@ This promotes the first user in the database to admin.
 
 | Feature | Description |
 |---|---|
-| OAuth Sign-in | Google, GitHub, Twitter, Facebook — no passwords stored |
-| Multi-platform Posting | Post to Twitter, Facebook, Instagram, LinkedIn simultaneously |
-| Platform Selector | Choose which platforms for each post |
-| Media Upload | Attach up to 4 images per post |
-| Post Scheduling | Schedule posts for a future date/time |
-| Post History | View all posts with per-platform success/failure status |
-| Analytics | Charts: posts over time, platform breakdown, success rates |
-| **Admin Panel** | User management, post monitoring, platform stats |
-| Admin: Ban/Unban | Suspend and restore user accounts |
-| Admin: Promote | Promote users to admin or demote admins |
+| **Zero Passwords** | 100% OAuth 2.0 (Google, GitHub, Twitter, Facebook) |
+| **Multi-Network Posting** | Post to Twitter/X, Facebook, Instagram, LinkedIn simultaneously |
+| **Live Mockup Preview** | Real-time card previews for each platform before publishing |
+| **Media Attachments** | Multi-image & video upload support with automated Twitter v1.1 upload |
+| **Background Cron Scheduler** | Automatically publishes posts when scheduled date/time arrives |
+| **Retry Failed Posts** | One-click instant retry for failed/partial network deliveries |
+| **Analytics Dashboard** | Engagement tracking, platform performance breakdown, success rates |
+| **Role-Gated Admin Panel** | Manage users, promote/demote admins, suspend/ban accounts, view all posts |
+| **Dark / Light Mode** | Fluid theme switching with persistent local storage |
 
 ---
 
 ## 🗂️ Project Structure
 
 ```
-socialbee/
+SocialSilico/
 ├── client/          # React + Vite frontend
+│   ├── public/      # Favicon, SVGs, PNG icons
 │   └── src/
 │       ├── pages/   # Landing, Login, Dashboard, Compose, Accounts, Analytics
 │       │   └── admin/  # AdminDashboard, AdminUsers, AdminPosts
+│       ├── components/common/SocialSilicoLogo.jsx
 │       ├── components/layout/AppLayout.jsx
-│       ├── store/authStore.js   # Zustand state
-│       └── index.css            # Full design system
+│       ├── store/authStore.js   # Zustand authentication state
+│       └── index.css            # SocialSilico violet/indigo design system
 │
 └── server/          # Node.js + Express backend
     └── src/
@@ -110,18 +119,5 @@ socialbee/
         ├── models/  # User.js, Post.js
         ├── routes/  # auth, posts, accounts, analytics, admin
         ├── middleware/ # auth.js, admin.js
-        └── services/platforms/ # twitter, facebook, linkedin adapters
+        └── services/   # scheduler.js (node-cron) & platform adapters
 ```
-
----
-
-## 🔧 Tech Stack
-
-| Layer | Technology |
-|---|---|
-| Frontend | React + Vite, React Router, Zustand, Recharts |
-| Backend | Node.js, Express.js |
-| Database | MongoDB + Mongoose |
-| Auth | Passport.js (OAuth 2.0), JWT |
-| Platforms | Twitter API v2, Facebook Graph API, Instagram Graph API, LinkedIn UGC API |
-| Styling | Vanilla CSS (custom design system) |

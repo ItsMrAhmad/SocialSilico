@@ -113,7 +113,7 @@ const initScheduler = () => {
   cron.schedule('* * * * *', () => {
     processScheduledPosts();
   });
-  console.log('⏰ SocialBee Post Scheduler initialized (running every minute)');
+  console.log('⏰ SocialSilico Post Scheduler initialized (running every minute)');
 };
 
 module.exports = { initScheduler, processScheduledPosts };

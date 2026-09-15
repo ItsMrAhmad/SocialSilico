@@ -7,7 +7,7 @@ const mongoose = require('mongoose');
 const User = require('../models/User');
 
 const seed = async () => {
-  await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/socialbee');
+  await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/socialsilico');
 
   // Promote the first user to admin
   const user = await User.findOne();

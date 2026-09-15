@@ -5,6 +5,7 @@ import {
   Settings, LogOut, Users, FileText, Shield, Zap
 } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
+import SocialSilicoLogo from '../common/SocialSilicoLogo';
 import ThemeToggle from '../common/ThemeToggle';
 import toast from 'react-hot-toast';
 
@@ -38,16 +39,8 @@ export default function AppLayout({ isAdmin }) {
     <div className="page-wrapper">
       {/* Sidebar */}
       <aside className="sidebar">
-        <div className="sidebar-logo" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{
-              width: 36, height: 36, borderRadius: 8,
-              background: 'linear-gradient(135deg, #F5C518, #F97316)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '1.2rem'
-            }}>🐝</div>
-            <span className="sidebar-logo-text">SocialBee</span>
-          </div>
+        <div className="sidebar-logo" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px 20px' }}>
+          <SocialSilicoLogo height={28} />
           <ThemeToggle />
         </div>
 

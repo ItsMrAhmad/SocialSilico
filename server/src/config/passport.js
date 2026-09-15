@@ -30,7 +30,7 @@ const findOrCreateUser = async (profile, provider, accessToken, refreshToken) =>
   if (!user) {
     user = await User.create({
       name: profile.displayName || profile.username || `${profile.name?.givenName} ${profile.name?.familyName}`,
-      email: profile.emails?.[0]?.value || `${profile.id}@${provider}.socialbee`,
+      email: profile.emails?.[0]?.value || `${profile.id}@${provider}.socialsilico`,
       avatar: profile.photos?.[0]?.value || '',
       oauthProviders: {
         [provider]: {

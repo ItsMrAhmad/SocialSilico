@@ -270,7 +270,7 @@ export default function Compose() {
                 )}
                 <div>
                   <div style={{ fontWeight: 700, fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: 6 }}>
-                    {user?.name || 'SocialBee User'}
+                    {user?.name || 'SocialSilico User'}
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 400 }}>
                       via {PLATFORMS.find(p => p.id === previewPlatform)?.name}
                     </span>

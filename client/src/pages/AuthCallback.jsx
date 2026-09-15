@@ -20,7 +20,7 @@ export default function AuthCallback() {
 
     if (token) {
       setToken(token);
-      toast.success('Welcome to SocialBee! 🐝');
+      toast.success('Welcome to SocialSilico! 🚀');
       navigate('/dashboard');
     } else {
       navigate('/login');

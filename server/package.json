@@ -1,7 +1,7 @@
 {
-  "name": "socialbee-server",
+  "name": "socialsilico-server",
   "version": "1.0.0",
-  "description": "SocialBee backend - Social Media Manager API",
+  "description": "SocialSilico backend - Social Media Manager API",
   "main": "src/app.js",
   "scripts": {
     "start": "node src/app.js",

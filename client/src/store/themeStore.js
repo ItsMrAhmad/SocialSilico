@@ -26,7 +26,7 @@ const useThemeStore = create(
       }
     }),
     {
-      name: 'socialbee-theme',
+      name: 'socialsilico-theme',
       onRehydrateStorage: () => (state) => {
         if (state?.theme) {
           applyTheme(state.theme);

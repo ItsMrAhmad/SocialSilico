@@ -55,11 +55,11 @@ app.use(morgan('dev'));
 
 // Session configuration
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'socialbee_secret',
+  secret: process.env.SESSION_SECRET || 'socialsilico_secret',
   resave: false,
   saveUninitialized: false,
   store: MongoStore.create({
-    mongoUrl: process.env.MONGODB_URI || 'mongodb://localhost:27017/socialbee',
+    mongoUrl: process.env.MONGODB_URI || 'mongodb://localhost:27017/socialsilico',
     ttl: 14 * 24 * 60 * 60, // 14 days
   }),
   cookie: {
@@ -103,7 +103,7 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`🚀 SocialBee server running on http://localhost:${PORT}`);
+  console.log(`🚀 SocialSilico server running on http://localhost:${PORT}`);
 });
 
 module.exports = app;

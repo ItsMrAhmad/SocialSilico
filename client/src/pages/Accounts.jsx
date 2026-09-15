@@ -168,7 +168,7 @@ export default function Accounts() {
             Your passwords are never stored
           </h4>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-            SocialBee uses OAuth 2.0 for all connections. We only receive access tokens with 
+            SocialSilico uses OAuth 2.0 for all connections. We only receive access tokens with 
             the specific permissions you grant. You can revoke access at any time from each platform's settings.
           </p>
         </div>

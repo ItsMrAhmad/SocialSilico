@@ -49,7 +49,7 @@ const useAuthStore = create(
       updateUser: (userData) => set(state => ({ user: { ...state.user, ...userData } })),
     }),
     {
-      name: 'socialbee-auth',
+      name: 'socialsilico-auth',
       partialize: (state) => ({ token: state.token }),
     }
   )

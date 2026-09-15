@@ -2,6 +2,7 @@ import React from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { AlertCircle, ArrowLeft } from 'lucide-react';
 import ThemeToggle from '../components/common/ThemeToggle';
+import SocialSilicoLogo from '../components/common/SocialSilicoLogo';
 
 // OAuth provider configs
 const providers = [
@@ -68,7 +69,7 @@ export default function Login() {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      background: 'radial-gradient(ellipse 80% 80% at 50% -10%, rgba(245,197,24,0.1) 0%, transparent 60%), var(--bg-base)',
+      background: 'radial-gradient(ellipse 80% 80% at 50% -10%, rgba(124, 58, 237, 0.15) 0%, transparent 60%), var(--bg-base)',
       padding: 20,
       position: 'relative'
     }}>
@@ -90,15 +91,8 @@ export default function Login() {
 
       <div style={{ width: '100%', maxWidth: 420 }}>
         {/* Logo */}
-        <div style={{ textAlign: 'center', marginBottom: 40 }}>
-          <div style={{ fontSize: '3rem', marginBottom: 12 }}>🐝</div>
-          <h1 style={{
-            fontFamily: "'Space Grotesk', sans-serif",
-            fontSize: '2rem', fontWeight: 800,
-            background: 'linear-gradient(135deg, #F5C518, #F97316)',
-            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-            marginBottom: 8
-          }}>SocialBee</h1>
+        <div style={{ textAlign: 'center', marginBottom: 36, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <SocialSilicoLogo height={44} style={{ marginBottom: 12 }} />
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
             Sign in to manage your social media
           </p>
