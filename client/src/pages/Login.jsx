@@ -147,6 +147,17 @@ export default function Login() {
         <p style={{ textAlign: 'center', marginTop: 24, fontSize: '0.8rem', color: 'var(--text-muted)' }}>
           By continuing, you agree to our Terms of Service and Privacy Policy.
         </p>
+        <p style={{ textAlign: 'center', marginTop: 12, fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+          Built by{' '}
+          <a
+            href="https://techsistlabs.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: 'var(--silico-violet)', fontWeight: 600, textDecoration: 'none' }}
+          >
+            TechsistLabs
+          </a>
+        </p>
       </div>
     </div>
   );

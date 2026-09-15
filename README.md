@@ -1,5 +1,7 @@
 # ⚡ SocialSilico — Social Media Manager
 
+> Built by **[TechsistLabs](https://techsistlabs.com)**.
+
 A full-stack social media automation and management platform that lets you publish and schedule content to **Twitter/X, Facebook, Instagram, and LinkedIn** with a single click. Powered by secure OAuth 2.0 authentication — zero password storage.
 
 ---

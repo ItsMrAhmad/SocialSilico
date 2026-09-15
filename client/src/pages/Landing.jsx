@@ -132,7 +132,15 @@ export default function Landing() {
         borderTop: '1px solid var(--border)', padding: '32px 40px',
         textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem'
       }}>
-        © 2026 SocialSilico. Built with ❤️ for creators.
+        © 2026 SocialSilico. Built by{' '}
+        <a
+          href="https://techsistlabs.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ color: 'var(--silico-violet)', fontWeight: 600, textDecoration: 'none' }}
+        >
+          TechsistLabs
+        </a>
       </footer>
     </div>
   );

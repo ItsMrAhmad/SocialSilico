@@ -96,6 +96,17 @@ export default function AppLayout({ isAdmin }) {
           <button className="btn btn-ghost btn-sm" style={{ width: '100%', justifyContent: 'flex-start' }} onClick={handleLogout}>
             <LogOut size={16} /> Logout
           </button>
+          <div style={{ marginTop: 12, textAlign: 'center', fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+            Built by{' '}
+            <a
+              href="https://techsistlabs.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: 'var(--silico-violet)', fontWeight: 600, textDecoration: 'none' }}
+            >
+              TechsistLabs
+            </a>
+          </div>
         </div>
       </aside>
 
