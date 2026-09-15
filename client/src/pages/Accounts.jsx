@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link2, Unlink, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
-import useAuthStore, { api } from '../store/authStore';
+import useAuthStore, { api, API_BASE } from '../store/authStore';
 
 const PLATFORMS = [
   {
@@ -37,7 +37,7 @@ export default function Accounts() {
 
   const handleConnect = (platform) => {
     if (platform.connectUrl) {
-      window.location.href = platform.connectUrl;
+      window.location.href = `${API_BASE}${platform.connectUrl}`;
     } else {
       toast('Coming soon! Add your credentials in Account Settings.', { icon: '🔧' });
     }

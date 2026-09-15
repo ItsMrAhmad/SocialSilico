@@ -3,6 +3,7 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { AlertCircle, ArrowLeft } from 'lucide-react';
 import ThemeToggle from '../components/common/ThemeToggle';
 import SocialSilicoLogo from '../components/common/SocialSilicoLogo';
+import { API_BASE } from '../store/authStore';
 
 // OAuth provider configs
 const providers = [
@@ -60,7 +61,7 @@ export default function Login() {
   const error = params.get('error');
 
   const handleOAuth = (provider) => {
-    window.location.href = `/api/auth/${provider}`;
+    window.location.href = `${API_BASE}/api/auth/${provider}`;
   };
 
   return (

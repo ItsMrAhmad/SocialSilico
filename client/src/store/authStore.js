@@ -2,7 +2,8 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import axios from 'axios';
 
-const api = axios.create({ baseURL: '/api' });
+export const API_BASE = import.meta.env.VITE_API_URL || '';
+const api = axios.create({ baseURL: `${API_BASE}/api` });
 
 // Attach token to every request
 api.interceptors.request.use(config => {
