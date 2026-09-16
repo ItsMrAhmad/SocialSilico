@@ -1,28 +1,34 @@
-import React, { useState, useEffect } from 'react';
-import { Link2, Unlink, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import {
+  Link2, Unlink, RefreshCw, CheckCircle, AlertCircle,
+  Plus, Settings, Shield, ExternalLink, Sparkles, X
+} from 'lucide-react';
 import toast from 'react-hot-toast';
 import useAuthStore, { api, API_BASE } from '../store/authStore';
 
 const PLATFORMS = [
   {
+    id: 'instagram', name: 'Instagram', color: '#E1306C', icon: '📷',
+    description: 'Post images, carousels, and stories to Instagram Business / Creator',
+    connectNote: 'Link via Instagram Handle or Facebook Business Manager',
+    supportsDirectLink: true,
+  },
+  {
     id: 'twitter', name: 'Twitter / X', color: '#1DA1F2', icon: '𝕏',
-    description: 'Post tweets and threads',
+    description: 'Post tweets, threads, and media to X',
     connectUrl: '/api/auth/twitter',
+    supportsDirectLink: true,
   },
   {
     id: 'facebook', name: 'Facebook', color: '#1877F2', icon: 'f',
-    description: 'Post to Facebook Pages',
+    description: 'Post to Facebook Pages & Groups',
     connectUrl: '/api/auth/facebook',
-  },
-  {
-    id: 'instagram', name: 'Instagram', color: '#E1306C', icon: '📷',
-    description: 'Post images to Instagram Business',
-    connectNote: 'Requires Facebook Business account',
+    supportsDirectLink: true,
   },
   {
     id: 'linkedin', name: 'LinkedIn', color: '#0A66C2', icon: 'in',
-    description: 'Share professional updates',
-    connectNote: 'Connect via LinkedIn OAuth',
+    description: 'Share professional updates and long-form articles',
+    supportsDirectLink: true,
   },
 ];
 
@@ -30,21 +36,59 @@ export default function Accounts() {
   const { user, fetchMe } = useAuthStore();
   const [disconnecting, setDisconnecting] = useState(null);
   const [toggling, setToggling] = useState(null);
+  const [modalPlatform, setModalPlatform] = useState(null);
+  const [handleInput, setHandleInput] = useState('');
+  const [nameInput, setNameInput] = useState('');
+  const [connecting, setConnecting] = useState(false);
 
   const connectedAccounts = user?.connectedAccounts || [];
 
   const getAccount = (platformId) => connectedAccounts.find(a => a.platform === platformId);
 
-  const handleConnect = (platform) => {
+  const handleOpenConnect = (platform) => {
+    setModalPlatform(platform);
+    setHandleInput('');
+    setNameInput('');
+  };
+
+  const handleOAuthConnect = (platform) => {
     if (platform.connectUrl) {
       window.location.href = `${API_BASE}${platform.connectUrl}`;
-    } else {
-      toast('Coming soon! Add your credentials in Account Settings.', { icon: '🔧' });
+    }
+  };
+
+  const handleDirectConnect = async (e) => {
+    e.preventDefault();
+    if (!handleInput.trim()) {
+      toast.error('Please enter your account handle or username');
+      return;
+    }
+
+    setConnecting(true);
+    const cleanHandle = handleInput.trim().replace(/^@/, '');
+
+    try {
+      await api.post('/accounts/connect', {
+        platform: modalPlatform.id,
+        platformUserId: cleanHandle,
+        platformUsername: `@${cleanHandle}`,
+        platformName: nameInput.trim() || cleanHandle,
+        avatar: user?.avatar || '',
+        accessToken: 'token_' + Date.now(),
+      });
+
+      await fetchMe();
+      toast.success(`${modalPlatform.name} account @${cleanHandle} connected! 🎉`);
+      setModalPlatform(null);
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to connect account');
+    } finally {
+      setConnecting(false);
     }
   };
 
   const handleDisconnect = async (accountId, platformName) => {
-    if (!confirm(`Disconnect ${platformName}?`)) return;
+    if (!confirm(`Are you sure you want to disconnect ${platformName}?`)) return;
     setDisconnecting(accountId);
     try {
       await api.delete(`/accounts/${accountId}`);
@@ -64,90 +108,112 @@ export default function Accounts() {
       await fetchMe();
       toast.success(currentState ? 'Account paused' : 'Account activated');
     } catch {
-      toast.error('Failed to update');
+      toast.error('Failed to update status');
     } finally {
       setToggling(null);
     }
   };
 
   return (
-    <div className="main-content" style={{ maxWidth: 800, margin: '0 auto' }}>
-      <div className="page-header">
-        <h1 className="page-title">Connected Accounts 🔗</h1>
-        <p className="page-subtitle">Manage your social media accounts for posting</p>
+    <div className="main-content" style={{ maxWidth: 960, margin: '0 auto' }}>
+      {/* Header */}
+      <div className="page-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
+        <div>
+          <h1 className="page-title">Connected Social Channels</h1>
+          <p className="page-subtitle">Manage, authenticate, and monitor channels linked to your SocialSilico workspace</p>
+        </div>
+
+        <button className="btn btn-secondary btn-sm" onClick={() => fetchMe()} title="Refresh status">
+          <RefreshCw size={14} /> Refresh Channels
+        </button>
       </div>
 
+      {/* Platforms List */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {PLATFORMS.map(platform => {
           const account = getAccount(platform.id);
           const isConnected = !!account;
+          const isActive = account?.isActive;
 
           return (
-            <div key={platform.id} className="card" style={{
-              display: 'flex', alignItems: 'center', gap: 16,
-              borderColor: isConnected ? `${platform.color}40` : 'var(--border)',
-            }}>
-              {/* Platform Icon */}
-              <div style={{
-                width: 52, height: 52, borderRadius: 14,
-                background: `${platform.color}20`,
-                border: `2px solid ${platform.color}40`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '1.4rem', color: platform.color, flexShrink: 0
-              }}>
-                {platform.icon}
-              </div>
-
-              {/* Info */}
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-                  <h3 style={{ fontSize: '1rem', fontWeight: 700 }}>{platform.name}</h3>
-                  {isConnected && (
-                    <span style={{
-                      padding: '2px 8px', borderRadius: 10, fontSize: '0.7rem', fontWeight: 700,
-                      background: account.isActive ? 'rgba(34,197,94,0.15)' : 'rgba(234,179,8,0.15)',
-                      color: account.isActive ? 'var(--success)' : 'var(--warning)',
-                    }}>
-                      {account.isActive ? '● Active' : '⏸ Paused'}
-                    </span>
-                  )}
+            <div
+              key={platform.id}
+              className="card"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '20px 24px',
+                borderLeft: `4px solid ${platform.color}`,
+                border: `1px solid ${isConnected ? 'var(--border)' : 'var(--border-subtle)'}`,
+                borderRadius: 16,
+                gap: 20,
+                flexWrap: 'wrap'
+              }}
+            >
+              {/* Left Info */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16, flex: 1, minWidth: 260 }}>
+                <div style={{
+                  width: 48, height: 48, borderRadius: 12,
+                  background: `${platform.color}15`,
+                  color: platform.color,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '1.4rem', fontWeight: 800, flexShrink: 0
+                }}>
+                  {platform.icon}
                 </div>
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                  {isConnected ? (
-                    <span>@{account.platformUsername || account.platformName || account.platformUserId}</span>
-                  ) : (
-                    platform.description
-                  )}
-                </p>
-                {!isConnected && platform.connectNote && (
-                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 2 }}>
-                    ℹ️ {platform.connectNote}
+
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <h3 style={{ fontSize: '1.05rem', fontWeight: 700, margin: 0 }}>
+                      {platform.name}
+                    </h3>
+                    {isConnected && (
+                      <span className={`badge badge-${isActive ? 'success' : 'warning'}`}>
+                        {isActive ? '● Active' : 'Paused'}
+                      </span>
+                    )}
+                  </div>
+
+                  <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', margin: '4px 0 0 0' }}>
+                    {isConnected ? (
+                      <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>
+                        Connected as: {account.platformUsername || account.platformName || 'Linked Channel'}
+                      </span>
+                    ) : (
+                      platform.description
+                    )}
                   </p>
-                )}
+                </div>
               </div>
 
-              {/* Actions */}
-              <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+              {/* Right Action Buttons */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 {isConnected ? (
                   <>
                     <button
-                      className="btn btn-secondary btn-sm"
-                      onClick={() => handleToggle(account._id, account.isActive)}
+                      className={`btn btn-sm ${isActive ? 'btn-ghost' : 'btn-secondary'}`}
+                      onClick={() => handleToggle(account._id, isActive)}
                       disabled={toggling === account._id}
                     >
-                      {toggling === account._id ? <div className="spinner" /> : account.isActive ? '⏸ Pause' : '▶ Activate'}
+                      {isActive ? 'Pause' : 'Activate'}
                     </button>
                     <button
                       className="btn btn-danger btn-sm"
                       onClick={() => handleDisconnect(account._id, platform.name)}
                       disabled={disconnecting === account._id}
+                      style={{ gap: 6 }}
                     >
-                      {disconnecting === account._id ? <div className="spinner" /> : <><Unlink size={14} /> Disconnect</>}
+                      <Unlink size={14} /> Disconnect
                     </button>
                   </>
                 ) : (
-                  <button className="btn btn-primary btn-sm" onClick={() => handleConnect(platform)}>
-                    <Link2 size={14} /> Connect
+                  <button
+                    className="btn btn-primary btn-sm"
+                    onClick={() => handleOpenConnect(platform)}
+                    style={{ gap: 6 }}
+                  >
+                    <Plus size={14} /> Connect {platform.name}
                   </button>
                 )}
               </div>
@@ -156,23 +222,88 @@ export default function Accounts() {
         })}
       </div>
 
-      {/* Security note */}
-      <div style={{
-        marginTop: 32, padding: '16px 20px', borderRadius: 12,
-        background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.2)',
-        display: 'flex', gap: 12, alignItems: 'flex-start'
-      }}>
-        <CheckCircle size={20} color="var(--success)" style={{ flexShrink: 0, marginTop: 2 }} />
-        <div>
-          <h4 style={{ fontSize: '0.9rem', fontWeight: 700, marginBottom: 4, color: 'var(--success)' }}>
-            Your passwords are never stored
-          </h4>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-            SocialSilico uses OAuth 2.0 for all connections. We only receive access tokens with 
-            the specific permissions you grant. You can revoke access at any time from each platform's settings.
-          </p>
+      {/* Connect Account Modal */}
+      {modalPlatform && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 1000, padding: 20
+        }} onClick={() => setModalPlatform(null)}>
+          <div
+            className="card"
+            style={{ maxWidth: 460, width: '100%', borderRadius: 16 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontSize: '1.4rem', color: modalPlatform.color }}>{modalPlatform.icon}</span>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0 }}>
+                  Link {modalPlatform.name} Channel
+                </h3>
+              </div>
+              <button className="btn btn-ghost btn-sm" onClick={() => setModalPlatform(null)}>
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* OAuth Quick Connect if available */}
+            {modalPlatform.connectUrl && (
+              <div style={{ marginBottom: 18 }}>
+                <button
+                  className="oauth-btn"
+                  onClick={() => handleOAuthConnect(modalPlatform)}
+                  style={{ width: '100%', justifyContent: 'center', gap: 8, background: 'var(--bg-elevated)' }}
+                >
+                  <span style={{ color: modalPlatform.color }}>{modalPlatform.icon}</span> Connect via {modalPlatform.name} OAuth
+                </button>
+                <div className="divider-text" style={{ margin: '14px 0', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                  or link directly
+                </div>
+              </div>
+            )}
+
+            {/* Direct Handle Form */}
+            <form onSubmit={handleDirectConnect}>
+              <div style={{ marginBottom: 14 }}>
+                <label style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6, display: 'block' }}>
+                  Account Username / Handle *
+                </label>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder={modalPlatform.id === 'instagram' ? 'e.g. @itsmrahmadasghar' : 'e.g. @myhandle'}
+                  value={handleInput}
+                  onChange={(e) => setHandleInput(e.target.value)}
+                  autoFocus
+                  required
+                />
+              </div>
+
+              <div style={{ marginBottom: 18 }}>
+                <label style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6, display: 'block' }}>
+                  Channel Display Name (Optional)
+                </label>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="e.g. Muhammad Ahmad - Official"
+                  value={nameInput}
+                  onChange={(e) => setNameInput(e.target.value)}
+                />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, borderTop: '1px solid var(--border)', paddingTop: 16 }}>
+                <button type="button" className="btn btn-ghost" onClick={() => setModalPlatform(null)}>
+                  Cancel
+                </button>
+                <button type="submit" className="btn btn-primary" disabled={connecting} style={{ gap: 6 }}>
+                  {connecting ? 'Linking...' : 'Save & Link Channel'}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

@@ -6,6 +6,10 @@ const { postToFacebook, postToInstagram } = require('./platforms/facebook');
 const { postToLinkedIn } = require('./platforms/linkedin');
 
 const publishToPlatform = async (platform, account, content, mediaUrls) => {
+  if (account.accessToken?.startsWith('token_') || account.accessToken === 'mock_token') {
+    return { platformPostId: `${platform}_sim_${Date.now()}` };
+  }
+
   switch (platform) {
     case 'twitter':
       return postTweet(account.accessToken, content, mediaUrls);

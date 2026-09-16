@@ -77,6 +77,20 @@ export default function Compose() {
       return;
     }
 
+    // Check for unlinked platforms
+    const unlinked = selectedPlatforms.filter(p => !connectedPlatforms.includes(p));
+    if (unlinked.length > 0) {
+      const names = unlinked.map(p => PLATFORMS.find(pl => pl.id === p)?.name).join(', ');
+      toast.error(`Please connect your ${names} channel under Accounts first!`, { duration: 4500 });
+      return;
+    }
+
+    // Check Instagram media requirement
+    if (selectedPlatforms.includes('instagram') && files.length === 0) {
+      toast.error('Instagram requires at least one image attachment to publish!', { duration: 4500 });
+      return;
+    }
+
     setPublishing(true);
 
     try {
@@ -141,9 +155,14 @@ export default function Compose() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           {/* Target Platforms */}
           <div className="card">
-            <label style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 10, display: 'block' }}>
-              Publish To:
-            </label>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+              <label style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                Publish To:
+              </label>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                {connectedPlatforms.length} channel(s) connected
+              </span>
+            </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 8 }}>
               {PLATFORMS.map(p => {
                 const isConnected = connectedPlatforms.includes(p.id);
@@ -152,24 +171,55 @@ export default function Compose() {
                 return (
                   <button
                     key={p.id}
-                    onClick={() => togglePlatform(p.id)}
+                    onClick={() => {
+                      if (!isConnected) {
+                        toast(`Connect your ${p.name} account under Accounts to publish!`, { icon: '🔗' });
+                        navigate('/accounts');
+                        return;
+                      }
+                      togglePlatform(p.id);
+                    }}
                     style={{
                       padding: '10px 12px',
                       borderRadius: 10,
                       border: `2px solid ${isSelected ? p.color : 'var(--border)'}`,
                       background: isSelected ? `${p.color}15` : 'var(--bg-elevated)',
-                      color: isSelected ? 'var(--text-primary)' : 'var(--text-secondary)',
+                      color: isConnected ? 'var(--text-primary)' : 'var(--text-muted)',
                       cursor: 'pointer',
-                      display: 'flex', alignItems: 'center', gap: 8,
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6,
                       transition: 'all 0.2s',
                     }}
                   >
-                    <span style={{ color: p.color, fontWeight: 700 }}>{p.icon}</span>
-                    <span style={{ fontSize: '0.82rem', fontWeight: 600 }}>{p.name.split(' ')[0]}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ color: p.color, fontWeight: 700 }}>{p.icon}</span>
+                      <span style={{ fontSize: '0.82rem', fontWeight: 600 }}>{p.name.split(' ')[0]}</span>
+                    </div>
+                    <span style={{
+                      fontSize: '0.65rem',
+                      padding: '1px 5px',
+                      borderRadius: 4,
+                      background: isConnected ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                      color: isConnected ? 'var(--success)' : 'var(--error)',
+                      fontWeight: 700
+                    }}>
+                      {isConnected ? 'Linked' : 'Unlinked'}
+                    </span>
                   </button>
                 );
               })}
             </div>
+
+            {/* Warning if Instagram selected without media */}
+            {selectedPlatforms.includes('instagram') && files.length === 0 && (
+              <div style={{
+                marginTop: 12, padding: '8px 12px', borderRadius: 8,
+                background: 'rgba(225, 48, 108, 0.12)', border: '1px solid rgba(225, 48, 108, 0.3)',
+                color: '#E1306C', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: 8
+              }}>
+                <AlertCircle size={15} />
+                <span><strong>Instagram requires an image attachment:</strong> Please attach at least 1 image below before publishing.</span>
+              </div>
+            )}
           </div>
 
           {/* Caption & Content Input */}
