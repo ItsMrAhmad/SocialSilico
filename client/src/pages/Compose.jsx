@@ -58,6 +58,15 @@ export default function Compose() {
     }
   }, [selectedPlatforms]);
 
+  useEffect(() => {
+    if (location.state?.initialContent) {
+      setContent(location.state.initialContent);
+    }
+    if (location.state?.initialPlatforms && location.state.initialPlatforms.length > 0) {
+      setSelectedPlatforms(location.state.initialPlatforms);
+    }
+  }, [location.state]);
+
   const togglePlatform = (platformId) => {
     setSelectedPlatforms(prev =>
       prev.includes(platformId)

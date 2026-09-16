@@ -18,6 +18,7 @@ const postRoutes = require('./routes/posts');
 const accountRoutes = require('./routes/accounts');
 const analyticsRoutes = require('./routes/analytics');
 const adminRoutes = require('./routes/admin');
+const aiRoutes = require('./routes/ai');
 
 const app = express();
 app.set('trust proxy', 1);
@@ -83,6 +84,7 @@ app.use('/api/posts', postRoutes);
 app.use('/api/accounts', accountRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/ai', aiRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
