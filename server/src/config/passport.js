@@ -51,12 +51,18 @@ const findOrCreateUser = async (profile, provider, accessToken, refreshToken) =>
   return user;
 };
 
+const getCallbackUrl = (path) => {
+  if (process.env.BACKEND_URL) return `${process.env.BACKEND_URL}${path}`;
+  return path;
+};
+
 // ─── Google ────────────────────────────────────────────────────────────────────
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: '/api/auth/google/callback'
+    callbackURL: getCallbackUrl('/api/auth/google/callback'),
+    proxy: true
   }, async (accessToken, refreshToken, profile, done) => {
     try {
       const user = await findOrCreateUser(profile, 'google', accessToken, refreshToken);
@@ -72,8 +78,9 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
   passport.use(new GitHubStrategy({
     clientID: process.env.GITHUB_CLIENT_ID,
     clientSecret: process.env.GITHUB_CLIENT_SECRET,
-    callbackURL: '/api/auth/github/callback',
-    scope: ['user:email']
+    callbackURL: getCallbackUrl('/api/auth/github/callback'),
+    scope: ['user:email'],
+    proxy: true
   }, async (accessToken, refreshToken, profile, done) => {
     try {
       const user = await findOrCreateUser(profile, 'github', accessToken, refreshToken);
@@ -89,8 +96,9 @@ if (process.env.FACEBOOK_APP_ID && process.env.FACEBOOK_APP_SECRET) {
   passport.use(new FacebookStrategy({
     clientID: process.env.FACEBOOK_APP_ID,
     clientSecret: process.env.FACEBOOK_APP_SECRET,
-    callbackURL: '/api/auth/facebook/callback',
-    profileFields: ['id', 'displayName', 'photos', 'email']
+    callbackURL: getCallbackUrl('/api/auth/facebook/callback'),
+    profileFields: ['id', 'displayName', 'photos', 'email'],
+    proxy: true
   }, async (accessToken, refreshToken, profile, done) => {
     try {
       const user = await findOrCreateUser(profile, 'facebook', accessToken, refreshToken);
@@ -106,8 +114,9 @@ if (process.env.TWITTER_CLIENT_ID && process.env.TWITTER_CLIENT_SECRET) {
   passport.use(new TwitterStrategy({
     consumerKey: process.env.TWITTER_CLIENT_ID,
     consumerSecret: process.env.TWITTER_CLIENT_SECRET,
-    callbackURL: '/api/auth/twitter/callback',
-    includeEmail: true
+    callbackURL: getCallbackUrl('/api/auth/twitter/callback'),
+    includeEmail: true,
+    proxy: true
   }, async (token, tokenSecret, profile, done) => {
     try {
       const user = await findOrCreateUser(profile, 'twitter', token, tokenSecret);

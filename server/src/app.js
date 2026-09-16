@@ -20,6 +20,7 @@ const analyticsRoutes = require('./routes/analytics');
 const adminRoutes = require('./routes/admin');
 
 const app = express();
+app.set('trust proxy', 1);
 
 // Connect to MongoDB & start cron scheduler
 connectDB();
