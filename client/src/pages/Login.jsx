@@ -1,9 +1,10 @@
 import React from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { AlertCircle, ArrowLeft } from 'lucide-react';
+import { AlertCircle, ArrowLeft, ArrowRight, LogOut, CheckCircle2 } from 'lucide-react';
 import ThemeToggle from '../components/common/ThemeToggle';
 import SocialSilicoLogo from '../components/common/SocialSilicoLogo';
-import { API_BASE } from '../store/authStore';
+import useAuthStore, { API_BASE } from '../store/authStore';
+import toast from 'react-hot-toast';
 
 // OAuth provider configs
 const providers = [
@@ -59,10 +60,19 @@ const providers = [
 export default function Login() {
   const [params] = useSearchParams();
   const error = params.get('error');
+  const { user, token, logout } = useAuthStore();
+  const isLoggedIn = !!(token && user);
 
   const handleOAuth = (provider) => {
     window.location.href = `${API_BASE}/api/auth/${provider}`;
   };
+
+  const handleLogout = async () => {
+    await logout();
+    toast.success('Signed out');
+  };
+
+  const initials = user?.name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'U';
 
   return (
     <div style={{
@@ -111,39 +121,88 @@ export default function Login() {
           </div>
         )}
 
-        {/* OAuth Buttons */}
-        <div className="card" style={{ gap: 12, display: 'flex', flexDirection: 'column' }}>
-          <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.1rem', marginBottom: 8, textAlign: 'center' }}>
-            Choose how to sign in
-          </h2>
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textAlign: 'center', marginBottom: 16 }}>
-            🔒 We never see or store your passwords
-          </p>
+        {isLoggedIn ? (
+          <div className="card" style={{ padding: '28px 24px', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{
+              width: 52, height: 52, borderRadius: '50%',
+              background: 'rgba(124, 58, 237, 0.12)', color: 'var(--silico-violet)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              margin: '0 auto', border: '1px solid rgba(124, 58, 237, 0.25)'
+            }}>
+              <CheckCircle2 size={28} />
+            </div>
 
-          {providers.map(provider => (
-            <button
-              key={provider.id}
-              onClick={() => handleOAuth(provider.id)}
-              className="oauth-btn"
-              style={{
-                background: provider.bg,
-                color: provider.color,
-                border: `1px solid ${provider.bg}`,
-              }}
-            >
-              <span style={{ width: 20, height: 20, flexShrink: 0 }}>{provider.icon}</span>
-              {provider.label}
-            </button>
-          ))}
+            <div>
+              <h2 style={{ fontSize: '1.15rem', fontWeight: 700, margin: '0 0 6px' }}>
+                You're Already Signed In
+              </h2>
+              <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                padding: '8px 12px', background: 'var(--bg-elevated)', borderRadius: 10,
+                border: '1px solid var(--border)', margin: '10px 0'
+              }}>
+                {user.avatar ? (
+                  <img src={user.avatar} alt={user.name} className="avatar" style={{ width: 28, height: 28 }} />
+                ) : (
+                  <div className="avatar avatar-placeholder" style={{ width: 28, height: 28, fontSize: '0.68rem' }}>
+                    {initials}
+                  </div>
+                )}
+                <div style={{ textAlign: 'left', minWidth: 0 }}>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>{user.name}</div>
+                  <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>{user.email}</div>
+                </div>
+              </div>
+            </div>
 
-          <div className="divider-text" style={{ margin: '8px 0' }}>
-            <span>more providers</span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <Link to="/dashboard" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', gap: 8 }}>
+                Continue to Dashboard <ArrowRight size={16} />
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="btn btn-ghost btn-sm"
+                style={{ width: '100%', justifyContent: 'center', gap: 6, color: 'var(--danger)' }}
+              >
+                <LogOut size={15} /> Switch Account / Sign Out
+              </button>
+            </div>
           </div>
+        ) : (
+          /* OAuth Buttons */
+          <div className="card" style={{ gap: 12, display: 'flex', flexDirection: 'column' }}>
+            <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.1rem', marginBottom: 8, textAlign: 'center' }}>
+              Choose how to sign in
+            </h2>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textAlign: 'center', marginBottom: 16 }}>
+              🔒 We never see or store your passwords
+            </p>
 
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textAlign: 'center' }}>
-            LinkedIn posting available after sign-in via Account Settings
-          </p>
-        </div>
+            {providers.map(provider => (
+              <button
+                key={provider.id}
+                onClick={() => handleOAuth(provider.id)}
+                className="oauth-btn"
+                style={{
+                  background: provider.bg,
+                  color: provider.color,
+                  border: `1px solid ${provider.bg}`,
+                }}
+              >
+                <span style={{ width: 20, height: 20, flexShrink: 0 }}>{provider.icon}</span>
+                {provider.label}
+              </button>
+            ))}
+
+            <div className="divider-text" style={{ margin: '8px 0' }}>
+              <span>more providers</span>
+            </div>
+
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textAlign: 'center' }}>
+              LinkedIn posting available after sign-in via Account Settings
+            </p>
+          </div>
+        )}
 
         <p style={{ textAlign: 'center', marginTop: 24, fontSize: '0.8rem', color: 'var(--text-muted)' }}>
           By continuing, you agree to our Terms of Service and Privacy Policy.

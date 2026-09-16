@@ -1,8 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Zap, Shield, BarChart3, Clock, ArrowRight, Check } from 'lucide-react';
+import { Zap, Shield, BarChart3, Clock, ArrowRight, Check, LogOut, LayoutDashboard } from 'lucide-react';
 import ThemeToggle from '../components/common/ThemeToggle';
 import SocialSilicoLogo from '../components/common/SocialSilicoLogo';
+import useAuthStore from '../store/authStore';
+import toast from 'react-hot-toast';
 
 const features = [
   { icon: Zap, title: 'One-Click Publishing', desc: 'Post to all your social media accounts simultaneously with a single click.' },
@@ -19,6 +21,16 @@ const platforms = [
 ];
 
 export default function Landing() {
+  const { user, token, logout } = useAuthStore();
+  const isLoggedIn = !!(token && user);
+
+  const handleLogout = async () => {
+    await logout();
+    toast.success('Logged out successfully');
+  };
+
+  const initials = user?.name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || 'U';
+
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-base)' }}>
       {/* Nav */}
@@ -33,8 +45,38 @@ export default function Landing() {
         </Link>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <ThemeToggle />
-          <Link to="/login" className="btn btn-ghost">Log In</Link>
-          <Link to="/login" className="btn btn-primary">Get Started Free</Link>
+          {isLoggedIn ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingRight: 4 }}>
+                {user.avatar ? (
+                  <img src={user.avatar} alt={user.name} className="avatar" style={{ width: 32, height: 32 }} />
+                ) : (
+                  <div className="avatar avatar-placeholder" style={{ width: 32, height: 32, fontSize: '0.72rem' }}>
+                    {initials}
+                  </div>
+                )}
+                <span style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                  {user.name?.split(' ')[0]}
+                </span>
+              </div>
+              <Link to="/dashboard" className="btn btn-primary btn-sm" style={{ gap: 6 }}>
+                <LayoutDashboard size={15} /> Go to Dashboard
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="btn btn-ghost btn-sm"
+                style={{ gap: 6, color: 'var(--text-secondary)' }}
+                title="Sign out of your account"
+              >
+                <LogOut size={15} /> Logout
+              </button>
+            </div>
+          ) : (
+            <>
+              <Link to="/login" className="btn btn-ghost">Log In</Link>
+              <Link to="/login" className="btn btn-primary">Get Started Free</Link>
+            </>
+          )}
         </div>
       </nav>
 
@@ -61,9 +103,15 @@ export default function Landing() {
         </p>
 
         <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
-          <Link to="/login" className="btn btn-primary btn-lg">
-            Start for Free <ArrowRight size={18} />
-          </Link>
+          {isLoggedIn ? (
+            <Link to="/dashboard" className="btn btn-primary btn-lg" style={{ gap: 8 }}>
+              Go to Dashboard <ArrowRight size={18} />
+            </Link>
+          ) : (
+            <Link to="/login" className="btn btn-primary btn-lg" style={{ gap: 8 }}>
+              Start for Free <ArrowRight size={18} />
+            </Link>
+          )}
           <a href="#features" className="btn btn-secondary btn-lg">See Features</a>
         </div>
 
@@ -122,9 +170,15 @@ export default function Landing() {
         <p style={{ color: 'var(--text-secondary)', marginBottom: 32, fontSize: '1.1rem' }}>
           Join creators and businesses who manage their entire social presence from one central dashboard.
         </p>
-        <Link to="/login" className="btn btn-primary btn-lg">
-          Get Started — It's Free <ArrowRight size={18} />
-        </Link>
+        {isLoggedIn ? (
+          <Link to="/dashboard" className="btn btn-primary btn-lg" style={{ gap: 8 }}>
+            Open Dashboard <ArrowRight size={18} />
+          </Link>
+        ) : (
+          <Link to="/login" className="btn btn-primary btn-lg" style={{ gap: 8 }}>
+            Get Started — It's Free <ArrowRight size={18} />
+          </Link>
+        )}
       </section>
 
       {/* Footer */}

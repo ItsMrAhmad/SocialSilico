@@ -42,7 +42,7 @@ export default function AppLayout({ isAdmin }) {
       {/* Sidebar */}
       <aside className="sidebar">
         <div className="sidebar-logo" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px 20px' }}>
-          <SocialSilicoLogo height={28} />
+          <SocialSilicoLogo height={28} to="/dashboard" />
           <ThemeToggle />
         </div>
 
@@ -111,8 +111,29 @@ export default function AppLayout({ isAdmin }) {
               </div>
             </div>
           </div>
-          <button className="btn btn-ghost btn-sm" style={{ width: '100%', justifyContent: 'flex-start' }} onClick={handleLogout}>
-            <LogOut size={16} /> Logout
+          <button
+            className="btn btn-ghost btn-sm"
+            style={{
+              width: '100%',
+              justifyContent: 'flex-start',
+              gap: 8,
+              color: 'var(--text-secondary)',
+              borderRadius: 8,
+              transition: 'all 0.2s',
+              cursor: 'pointer'
+            }}
+            onClick={handleLogout}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = 'var(--danger)';
+              e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = 'var(--text-secondary)';
+              e.currentTarget.style.background = 'transparent';
+            }}
+            title="Sign out of your account"
+          >
+            <LogOut size={16} /> Logout / Sign Out
           </button>
           <div style={{ marginTop: 12, textAlign: 'center', fontSize: '0.72rem', color: 'var(--text-muted)' }}>
             Built by{' '}

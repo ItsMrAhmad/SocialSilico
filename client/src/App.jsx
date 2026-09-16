@@ -24,6 +24,9 @@ import AppLayout from './components/layout/AppLayout';
 
 const ProtectedRoute = ({ children }) => {
   const { token, user, loading } = useAuthStore();
+  // Fast path: if token and user are already loaded from localStorage, render immediately
+  if (token && user) return children;
+
   if (loading || (token && !user)) return (
     <div style={{
       display: 'flex', flexDirection: 'column', alignItems: 'center',

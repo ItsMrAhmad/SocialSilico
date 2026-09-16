@@ -31,7 +31,7 @@ const useAuthStore = create(
       fetchMe: async (token) => {
         const authToken = token || get().token;
         if (!authToken) {
-          set({ user: null, loading: false });
+          set({ user: null, token: null, loading: false });
           return false;
         }
         try {
@@ -47,8 +47,15 @@ const useAuthStore = create(
           return false;
         } catch (err) {
           console.error('fetchMe error:', err);
-          set({ user: null, token: null, loading: false, error: err.message });
-          return false;
+          // CRITICAL: Only clear token if server explicitly responded with 401 (invalid/expired) or 403 (suspended)
+          if (err.response?.status === 401 || err.response?.status === 403) {
+            set({ user: null, token: null, loading: false, error: err.response?.data?.error || err.message });
+            return false;
+          }
+          // If server is spinning up on Render or temporary network error (502, 503, timeout),
+          // DO NOT wipe the stored user session! Keep cached user logged in!
+          set({ loading: false });
+          return !!get().user;
         }
       },
 
@@ -56,14 +63,17 @@ const useAuthStore = create(
         try {
           await api.post('/auth/logout');
         } catch { }
-        set({ user: null, token: null });
+        set({ user: null, token: null, loading: false, error: null });
+        try {
+          localStorage.removeItem('socialsilico-auth');
+        } catch { }
       },
 
       updateUser: (userData) => set(state => ({ user: { ...state.user, ...userData } })),
     }),
     {
       name: 'socialsilico-auth',
-      partialize: (state) => ({ token: state.token }),
+      partialize: (state) => ({ token: state.token, user: state.user }),
     }
   )
 );

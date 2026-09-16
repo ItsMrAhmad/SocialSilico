@@ -62,12 +62,12 @@ app.use(session({
   saveUninitialized: false,
   store: MongoStore.create({
     mongoUrl: process.env.MONGODB_URI || 'mongodb://localhost:27017/socialsilico',
-    ttl: 14 * 24 * 60 * 60, // 14 days
+    ttl: 30 * 24 * 60 * 60, // 30 days
   }),
   cookie: {
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
-    maxAge: 14 * 24 * 60 * 60 * 1000
+    maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
   }
 }));
 
