@@ -3,25 +3,26 @@ import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import {
   Send, Image, Calendar as CalendarIcon, X, AlertCircle,
   CheckCircle, Sparkles, Clock, Eye, MessageCircle, Heart,
-  Repeat2, Share, Bookmark, ThumbsUp, MessageSquare, CornerUpRight
+  Repeat2, Share, Bookmark, ThumbsUp, MessageSquare, CornerUpRight,
+  Plus, Link2
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import useAuthStore, { api } from '../store/authStore';
+import useAuthStore, { api, API_BASE } from '../store/authStore';
 
 const PLATFORMS = [
-  { id: 'twitter', name: 'X / Twitter', color: '#1DA1F2', icon: '𝕏', limit: 280 },
-  { id: 'facebook', name: 'Facebook', color: '#1877F2', icon: 'f', limit: 63206 },
-  { id: 'instagram', name: 'Instagram', color: '#E1306C', icon: '📷', limit: 2200 },
+  { id: 'instagram', name: 'Instagram', color: '#E1306C', icon: '📷', limit: 2200, note: 'Requires image attachment' },
+  { id: 'twitter', name: 'X / Twitter', color: '#1DA1F2', icon: '𝕏', limit: 280, connectUrl: '/api/auth/twitter' },
+  { id: 'facebook', name: 'Facebook', color: '#1877F2', icon: 'f', limit: 63206, connectUrl: '/api/auth/facebook' },
   { id: 'linkedin', name: 'LinkedIn', color: '#0A66C2', icon: 'in', limit: 3000 },
 ];
 
 export default function Compose() {
-  const { user } = useAuthStore();
+  const { user, fetchMe } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
 
-  // Retrieve any initial state passed from AI Studio or Calendar
+  // Retrieve initial state passed from AI Studio or Calendar
   const initialContent = location.state?.initialContent || '';
   const initialPlatforms = location.state?.initialPlatforms || [];
   const queryDate = searchParams.get('scheduledDate');
@@ -35,8 +36,21 @@ export default function Compose() {
   const [publishing, setPublishing] = useState(false);
   const [previewTab, setPreviewTab] = useState('twitter');
 
+  // Pop-up modal state for connecting channels
+  const [connectModalPlatform, setConnectModalPlatform] = useState(null);
+  const [handleInput, setHandleInput] = useState('');
+  const [nameInput, setNameInput] = useState('');
+  const [connecting, setConnecting] = useState(false);
+
   const connectedAccounts = user?.connectedAccounts?.filter(a => a.isActive) || [];
   const connectedPlatforms = connectedAccounts.map(a => a.platform);
+
+  // If user has connected channels and current selected has none, auto-select first connected
+  useEffect(() => {
+    if (connectedPlatforms.length > 0 && selectedPlatforms.every(p => !connectedPlatforms.includes(p))) {
+      setSelectedPlatforms([connectedPlatforms[0]]);
+    }
+  }, [user]);
 
   useEffect(() => {
     if (selectedPlatforms.length > 0 && !selectedPlatforms.includes(previewTab)) {
@@ -57,7 +71,6 @@ export default function Compose() {
     const combined = [...files, ...newFiles].slice(0, 4);
     setFiles(combined);
 
-    // Create object URLs for preview
     const urls = combined.map(file => URL.createObjectURL(file));
     setFilePreviews(urls);
   };
@@ -65,6 +78,48 @@ export default function Compose() {
   const removeFile = (idx) => {
     setFiles(prev => prev.filter((_, i) => i !== idx));
     setFilePreviews(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  // Direct channel link inside pop-up modal
+  const handleDirectConnect = async (e) => {
+    e.preventDefault();
+    if (!handleInput.trim()) {
+      toast.error('Please enter your account handle or username');
+      return;
+    }
+
+    setConnecting(true);
+    const cleanHandle = handleInput.trim().replace(/^@/, '');
+
+    try {
+      await api.post('/accounts/connect', {
+        platform: connectModalPlatform.id,
+        platformUserId: cleanHandle,
+        platformUsername: `@${cleanHandle}`,
+        platformName: nameInput.trim() || cleanHandle,
+        avatar: user?.avatar || '',
+        accessToken: 'token_' + Date.now(),
+      });
+
+      await fetchMe();
+      toast.success(`${connectModalPlatform.name} account @${cleanHandle} connected! 🎉`);
+
+      // Auto-select this newly connected platform in composer
+      setSelectedPlatforms(prev => prev.includes(connectModalPlatform.id) ? prev : [...prev, connectModalPlatform.id]);
+      setConnectModalPlatform(null);
+      setHandleInput('');
+      setNameInput('');
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to connect account');
+    } finally {
+      setConnecting(false);
+    }
+  };
+
+  const handleOAuthConnect = (platform) => {
+    if (platform.connectUrl) {
+      window.location.href = `${API_BASE}${platform.connectUrl}`;
+    }
   };
 
   const handlePublish = async () => {
@@ -77,11 +132,12 @@ export default function Compose() {
       return;
     }
 
-    // Check for unlinked platforms
+    // Check for unlinked platforms - if unlinked, trigger popup!
     const unlinked = selectedPlatforms.filter(p => !connectedPlatforms.includes(p));
     if (unlinked.length > 0) {
-      const names = unlinked.map(p => PLATFORMS.find(pl => pl.id === p)?.name).join(', ');
-      toast.error(`Please connect your ${names} channel under Accounts first!`, { duration: 4500 });
+      const firstUnlinked = PLATFORMS.find(pl => pl.id === unlinked[0]);
+      setConnectModalPlatform(firstUnlinked);
+      toast.error(`Please connect ${firstUnlinked.name} before publishing!`, { duration: 4000 });
       return;
     }
 
@@ -173,8 +229,9 @@ export default function Compose() {
                     key={p.id}
                     onClick={() => {
                       if (!isConnected) {
-                        toast(`Connect your ${p.name} account under Accounts to publish!`, { icon: '🔗' });
-                        navigate('/accounts');
+                        setConnectModalPlatform(p);
+                        setHandleInput('');
+                        setNameInput('');
                         return;
                       }
                       togglePlatform(p.id);
@@ -183,7 +240,7 @@ export default function Compose() {
                       padding: '10px 12px',
                       borderRadius: 10,
                       border: `2px solid ${isSelected ? p.color : 'var(--border)'}`,
-                      background: isSelected ? `${p.color}15` : 'var(--bg-elevated)',
+                      background: isSelected ? `${p.color}18` : 'var(--bg-elevated)',
                       color: isConnected ? 'var(--text-primary)' : 'var(--text-muted)',
                       cursor: 'pointer',
                       display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6,
@@ -202,7 +259,7 @@ export default function Compose() {
                       color: isConnected ? 'var(--success)' : 'var(--error)',
                       fontWeight: 700
                     }}>
-                      {isConnected ? 'Linked' : 'Unlinked'}
+                      {isConnected ? 'Linked' : '+ Link'}
                     </span>
                   </button>
                 );
@@ -477,6 +534,95 @@ export default function Compose() {
           </div>
         </div>
       </div>
+
+      {/* Connect Channel Modal Pop-up */}
+      {connectModalPlatform && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 1000, padding: 20
+        }} onClick={() => setConnectModalPlatform(null)}>
+          <div
+            className="card"
+            style={{ maxWidth: 460, width: '100%', borderRadius: 16, border: `2px solid ${connectModalPlatform.color}` }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontSize: '1.5rem', color: connectModalPlatform.color }}>{connectModalPlatform.icon}</span>
+                <div>
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0 }}>
+                    Connect {connectModalPlatform.name}
+                  </h3>
+                  <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: 0 }}>
+                    Link your account to enable publishing to {connectModalPlatform.name}
+                  </p>
+                </div>
+              </div>
+              <button className="btn btn-ghost btn-sm" onClick={() => setConnectModalPlatform(null)}>
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* OAuth Option */}
+            {connectModalPlatform.connectUrl && (
+              <div style={{ marginBottom: 18 }}>
+                <button
+                  type="button"
+                  className="oauth-btn"
+                  onClick={() => handleOAuthConnect(connectModalPlatform)}
+                  style={{ width: '100%', justifyContent: 'center', gap: 8, background: 'var(--bg-elevated)' }}
+                >
+                  <span style={{ color: connectModalPlatform.color }}>{connectModalPlatform.icon}</span> Connect with {connectModalPlatform.name} OAuth
+                </button>
+                <div className="divider-text" style={{ margin: '14px 0', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                  or link directly
+                </div>
+              </div>
+            )}
+
+            {/* Direct Handle Form */}
+            <form onSubmit={handleDirectConnect}>
+              <div style={{ marginBottom: 14 }}>
+                <label style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6, display: 'block' }}>
+                  Account Username / Handle *
+                </label>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder={connectModalPlatform.id === 'instagram' ? 'e.g. @itsmrahmadasghar' : 'e.g. @myhandle'}
+                  value={handleInput}
+                  onChange={(e) => setHandleInput(e.target.value)}
+                  autoFocus
+                  required
+                />
+              </div>
+
+              <div style={{ marginBottom: 18 }}>
+                <label style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6, display: 'block' }}>
+                  Channel Display Name (Optional)
+                </label>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="e.g. Muhammad Ahmad"
+                  value={nameInput}
+                  onChange={(e) => setNameInput(e.target.value)}
+                />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, borderTop: '1px solid var(--border)', paddingTop: 16 }}>
+                <button type="button" className="btn btn-ghost" onClick={() => setConnectModalPlatform(null)}>
+                  Cancel
+                </button>
+                <button type="submit" className="btn btn-primary" disabled={connecting} style={{ gap: 6 }}>
+                  {connecting ? 'Linking...' : `Save & Link ${connectModalPlatform.name}`}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
