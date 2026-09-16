@@ -453,3 +453,28 @@ tr:hover td { background: var(--bg-card-hover); }
 @media (max-width: 480px) {
   .stats-grid { grid-template-columns: 1fr; }
 }
+
+/* ─── Calendar & Content Studio Micro-interactions ─────────────── */
+.calendar-cell:hover {
+  background: rgba(124, 58, 237, 0.08) !important;
+}
+.calendar-cell:hover .add-post-hover {
+  opacity: 1 !important;
+}
+.post-chip:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.1);
+}
+.hover-bright:hover {
+  background: var(--bg-card-hover) !important;
+  border-color: var(--silico-violet) !important;
+  color: var(--text-primary) !important;
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+

@@ -10,6 +10,8 @@ import Login from './pages/Login';
 import AuthCallback from './pages/AuthCallback';
 import Dashboard from './pages/Dashboard';
 import Compose from './pages/Compose';
+import Calendar from './pages/Calendar';
+import AIStudio from './pages/AIStudio';
 import Accounts from './pages/Accounts';
 import PostHistory from './pages/PostHistory';
 import Analytics from './pages/Analytics';
@@ -22,9 +24,14 @@ import AppLayout from './components/layout/AppLayout';
 
 const ProtectedRoute = ({ children }) => {
   const { token, user, loading } = useAuthStore();
-  if (loading) return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
-      <div className="spinner spinner-lg" />
+  if (loading || (token && !user)) return (
+    <div style={{
+      display: 'flex', flexDirection: 'column', alignItems: 'center',
+      justifyContent: 'center', height: '100vh', gap: 16,
+      background: 'var(--bg-base)'
+    }}>
+      <div className="spinner spinner-lg" style={{ borderColor: 'rgba(124, 58, 237, 0.2)', borderTopColor: 'var(--silico-violet)' }} />
+      <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Loading workspace...</p>
     </div>
   );
   if (!token || !user) return <Navigate to="/login" replace />;
@@ -61,7 +68,7 @@ export default function App() {
             fontFamily: 'Inter, sans-serif',
             boxShadow: 'var(--shadow-md)',
           },
-          success: { iconTheme: { primary: '#F5C518', secondary: '#000' } },
+          success: { iconTheme: { primary: '#7C3AED', secondary: '#fff' } },
         }}
       />
       <Routes>
@@ -74,6 +81,8 @@ export default function App() {
         <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/compose" element={<Compose />} />
+          <Route path="/calendar" element={<Calendar />} />
+          <Route path="/ai-studio" element={<AIStudio />} />
           <Route path="/accounts" element={<Accounts />} />
           <Route path="/history" element={<PostHistory />} />
           <Route path="/analytics" element={<Analytics />} />

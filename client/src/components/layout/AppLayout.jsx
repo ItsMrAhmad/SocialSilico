@@ -2,7 +2,7 @@ import React from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, PenLine, Link2, History, BarChart3,
-  Settings, LogOut, Users, FileText, Shield, Zap
+  Settings, LogOut, Users, FileText, Shield, Zap, CalendarDays, Sparkles
 } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import SocialSilicoLogo from '../common/SocialSilicoLogo';
@@ -12,6 +12,8 @@ import toast from 'react-hot-toast';
 const navItems = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/compose', icon: PenLine, label: 'Compose' },
+  { to: '/calendar', icon: CalendarDays, label: 'Calendar' },
+  { to: '/ai-studio', icon: Sparkles, label: 'AI Studio', badge: 'AI' },
   { to: '/accounts', icon: Link2, label: 'Accounts' },
   { to: '/history', icon: History, label: 'Post History' },
   { to: '/analytics', icon: BarChart3, label: 'Analytics' },
@@ -52,9 +54,25 @@ export default function AppLayout({ isAdmin }) {
               key={item.to}
               to={item.to}
               className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
             >
-              <item.icon size={18} />
-              {item.label}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <item.icon size={18} />
+                {item.label}
+              </div>
+              {item.badge && (
+                <span style={{
+                  fontSize: '0.65rem',
+                  fontWeight: 800,
+                  padding: '1px 6px',
+                  borderRadius: 6,
+                  background: 'var(--gradient-brand)',
+                  color: '#fff',
+                  boxShadow: '0 2px 6px rgba(124, 58, 237, 0.4)'
+                }}>
+                  {item.badge}
+                </span>
+              )}
             </NavLink>
           ))}
 

@@ -1,6 +1,7 @@
 const express = require('express');
 const passport = require('passport');
 const jwt = require('jsonwebtoken');
+const { protect } = require('../middleware/auth');
 const router = express.Router();
 
 const generateToken = (user) => {
@@ -19,10 +20,9 @@ const redirectWithToken = (res, user) => {
 };
 
 // ─── Current User ───────────────────────────────────────────────────────────────
-router.get('/me', (req, res) => {
-  if (!req.user) return res.status(401).json({ error: 'Not authenticated' });
-  const user = req.user.toObject();
-  delete user.oauthProviders;
+router.get('/me', protect, (req, res) => {
+  const user = req.user.toObject ? req.user.toObject() : req.user;
+  if (user.oauthProviders) delete user.oauthProviders;
   res.json({ user });
 });
 

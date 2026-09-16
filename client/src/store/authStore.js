@@ -2,7 +2,11 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import axios from 'axios';
 
-export const API_BASE = import.meta.env.VITE_API_URL || '';
+export const API_BASE = import.meta.env.VITE_API_URL || 
+  (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? '' 
+    : 'https://socialsilico.onrender.com');
+
 const api = axios.create({ baseURL: `${API_BASE}/api` });
 
 // Attach token to every request
@@ -22,21 +26,29 @@ const useAuthStore = create(
 
       setToken: (token) => {
         set({ token });
-        if (token) {
-          // Fetch user profile after login
-          get().fetchMe(token);
-        }
       },
 
       fetchMe: async (token) => {
+        const authToken = token || get().token;
+        if (!authToken) {
+          set({ user: null, loading: false });
+          return false;
+        }
         try {
-          set({ loading: true });
+          set({ loading: true, error: null });
           const res = await api.get('/auth/me', {
-            headers: { Authorization: `Bearer ${token || get().token}` }
+            headers: { Authorization: `Bearer ${authToken}` }
           });
-          set({ user: res.data.user, loading: false, error: null });
-        } catch (err) {
+          if (res.data?.user) {
+            set({ user: res.data.user, token: authToken, loading: false, error: null });
+            return true;
+          }
           set({ user: null, token: null, loading: false });
+          return false;
+        } catch (err) {
+          console.error('fetchMe error:', err);
+          set({ user: null, token: null, loading: false, error: err.message });
+          return false;
         }
       },
 
